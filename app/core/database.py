@@ -1,9 +1,19 @@
 from sqlmodel import SQLModel, create_engine, Session
 from app.core.config import settings
 
+# Railway sometimes gives "postgres://", SQLAlchemy needs "postgresql://"
+DATABASE_URL = settings.DATABASE_URL
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+connect_args = (
+    {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+)
+
 engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args={"check_same_thread": False},
+    DATABASE_URL,
+    connect_args=connect_args,
+    pool_pre_ping=True,
     echo=False,
 )
 
