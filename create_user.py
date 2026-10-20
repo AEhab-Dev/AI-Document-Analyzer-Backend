@@ -3,22 +3,18 @@ from app.core.database import engine, create_db_and_tables
 from app.core.security import hash_password
 from app.models.user import User
 
-EMAIL = "james@company.com"          # غيّره
-PASSWORD = "ChangeMe12345"         # غيّره
-FULL_NAME = "Your Name"            # غيّره
+EMAIL = "james@company.com"
+PASSWORD = "secret123"
+FULL_NAME = "Admin"
 
 create_db_and_tables()
 
 with Session(engine) as session:
-    existing = session.exec(select(User).where(User.email == EMAIL)).first()
-    if existing:
-        print("User already exists")
+    user = session.exec(select(User).where(User.email == EMAIL)).first()
+    if user:
+        user.hashed_password = hash_password(PASSWORD)
+        print("Password updated:", EMAIL)
     else:
-        user = User(
-            email=EMAIL,
-            hashed_password=hash_password(PASSWORD),
-            full_name=FULL_NAME,
-        )
-        session.add(user)
-        session.commit()
+        session.add(User(email=EMAIL, hashed_password=hash_password(PASSWORD), full_name=FULL_NAME))
         print("User created:", EMAIL)
+    session.commit()
